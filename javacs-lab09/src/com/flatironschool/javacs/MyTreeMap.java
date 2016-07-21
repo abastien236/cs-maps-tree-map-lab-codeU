@@ -18,7 +18,7 @@ import java.util.Set;
  * @param <V>
  *
  */
-public class MyTreeMap<K, V> implements Map<K, V> {
+public class MyTreeMap<K, V> implements Map<K, V>{
 
 	private int size = 0;
 	private Node root = null;
@@ -73,7 +73,16 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 		
 		// the actual search
         // TODO: Fill this in.
-        return null;
+		int cmp = k.compareTo(root.key);
+		if(cmp == 0) {
+			return root;
+		}
+		else if (cmp < 0) {
+			return findNode(root.left);
+		}
+		else {
+			return findNode(root.right);
+		}
 	}
 
 	/**
@@ -92,7 +101,24 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 
 	@Override
 	public boolean containsValue(Object target) {
-		return false;
+		boolean track = false;
+		if(target == null || root == null) {
+			return false;
+		}
+		return containsValueHelp(root, target, false);
+	}
+	private boolean containsValueHelp(Node node, Object target, boolean help) {
+		if(node != null) {
+			if(equals(node.value, target)) {
+				help = true;
+				return help;
+			}
+			else {
+				containsValueHelp(node.left, target, help);
+				containsValueHelp(node.right, target, help);
+			}
+		}
+		return help;
 	}
 
 	@Override
@@ -117,8 +143,26 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 	@Override
 	public Set<K> keySet() {
 		Set<K> set = new LinkedHashSet<K>();
-        // TODO: Fill this in.
-		return set;
+		if(root == null) {
+			return null;
+		}
+		        // TODO: Fill this in.
+		return keySetHelper(set, root, size);
+	}
+
+	private Set<K> keySetHelper(Set<K> set, Node node,int count) {
+		if(node.left != null) {
+			count--;
+			keySetHelper(set, node.left, count);
+		}
+		set.add(node.key);
+
+		if(node.right != null) {
+			count--;
+			keySetHelper(set, node.right, count);
+		}
+
+		return set;			
 	}
 
 	@Override
@@ -135,8 +179,37 @@ public class MyTreeMap<K, V> implements Map<K, V> {
 	}
 
 	private V putHelper(Node node, K key, V value) {
+		Boolean temp = containsKey(key);
+
+		if(temp) {
+			Node rep = findNode(key);
+			V val = rep.value;
+			rep.value = value;
+			return val;
+		}
+		else {
+			size++;
+			Node newNode = new Node(key,value);
+			Node curr= node, parent = curr; 
+			Comparable<? super K> k = (Comparable<? super K>) key;
+			while(true) {
+				if(k.compareTo(node.key) > 0) {
+					curr = curr.left;
+					if(curr == null) {
+						parent.left = newNode;
+						return null;
+					}
+				}
+				else {
+					curr = curr.right;
+					if(curr == null) {
+						parent.right = newNode;
+						return null;
+					}
+				} 
+			}
+		}
         // TODO: Fill this in.
-        return null;
 	}
 
 	@Override
