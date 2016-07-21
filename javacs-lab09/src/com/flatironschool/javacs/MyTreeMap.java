@@ -73,16 +73,20 @@ public class MyTreeMap<K, V> implements Map<K, V>{
 		
 		// the actual search
         // TODO: Fill this in.
-		int cmp = k.compareTo(root.key);
-		if(cmp == 0) {
-			return root;
+		Node node = root;
+		while(node != null) {
+			int cmp = k.compareTo(node.key);
+			if(cmp < 0) {
+				node = node.left;
+			}
+			else if (cmp > 0) {
+				node = node.right;
+			}
+			else {
+				return node;
+			}
 		}
-		else if (cmp < 0) {
-			return findNode(root.left);
-		}
-		else {
-			return findNode(root.right);
-		}
+		return null;
 	}
 
 	/**
@@ -101,24 +105,24 @@ public class MyTreeMap<K, V> implements Map<K, V>{
 
 	@Override
 	public boolean containsValue(Object target) {
-		boolean track = false;
 		if(target == null || root == null) {
 			return false;
 		}
-		return containsValueHelp(root, target, false);
+		return containsValueHelp(root, target);
 	}
-	private boolean containsValueHelp(Node node, Object target, boolean help) {
+	private boolean containsValueHelp(Node node, Object target) {
 		if(node != null) {
 			if(equals(node.value, target)) {
-				help = true;
-				return help;
+				return true;
 			}
-			else {
-				containsValueHelp(node.left, target, help);
-				containsValueHelp(node.right, target, help);
+			if (containsValueHelp(node.left, target)) {
+				return true;
+			}
+			if (containsValueHelp(node.right, target)) {
+				return true;
 			}
 		}
-		return help;
+		return false;
 	}
 
 	@Override
@@ -179,36 +183,32 @@ public class MyTreeMap<K, V> implements Map<K, V>{
 	}
 
 	private V putHelper(Node node, K key, V value) {
-		Boolean temp = containsKey(key);
+		Comparable<? super K> k = (Comparable<? super K>) key;
+		int cmp = k.compareTo(node.key);
 
-		if(temp) {
-			Node rep = findNode(key);
-			V val = rep.value;
-			rep.value = value;
-			return val;
-		}
-		else {
-			size++;
-			Node newNode = new Node(key,value);
-			Node curr= node, parent = curr; 
-			Comparable<? super K> k = (Comparable<? super K>) key;
-			while(true) {
-				if(k.compareTo(node.key) > 0) {
-					curr = curr.left;
-					if(curr == null) {
-						parent.left = newNode;
-						return null;
-					}
-				}
-				else {
-					curr = curr.right;
-					if(curr == null) {
-						parent.right = newNode;
-						return null;
-					}
-				} 
+		if (cmp < 0) {
+			if (node.left == null) {
+				node.left = new Node(key, value);
+				size++;
+				return null;
+			}
+			else {
+				return putHelper(node.left, key, value);
 			}
 		}
+		if (cmp > 0) {
+			if (node.right == null) {
+				node.right = new Node(key, value);
+				size++;
+				return null;
+			}
+			else {
+				return putHelper(node.right, key, value);
+			}
+		}
+		V oldval = node.value;
+		node.value = value;
+		return oldval;
         // TODO: Fill this in.
 	}
 
